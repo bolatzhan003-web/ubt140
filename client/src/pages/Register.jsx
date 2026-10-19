@@ -62,9 +62,11 @@ export default function Register() {
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 bg-[#f8fafc] animate-fade-in">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-blue-500/25 mx-auto mb-4">
-            140
-          </div>
+          <img
+            src="/logo.png"
+            alt="UBT140 Logo"
+            className="w-20 h-20 object-contain mx-auto mb-3 drop-shadow-md"
+          />
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             {isKz ? 'Платформаға тіркелу' : 'Регистрация в UBT140'}
           </h1>

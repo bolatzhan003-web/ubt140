@@ -24,11 +24,13 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-sm shadow-md shadow-blue-500/20">
-                140
-              </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
-                UBT140<span className="text-blue-600">.KZ</span>
+              <img
+                src="/logo.png"
+                alt="UBT140 Logo"
+                className="h-10 w-10 object-contain transition-transform group-hover:scale-105"
+              />
+              <span className="text-xl font-black tracking-tight text-[#0f2347] group-hover:text-blue-600 transition-colors">
+                UBT140<span className="text-[#f59e0b]">.KZ</span>
               </span>
             </Link>
 

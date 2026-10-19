@@ -247,10 +247,11 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-slate-200 py-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-900">UBT140.KZ</span>
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="UBT140" className="h-7 w-7 object-contain" />
+            <span className="font-extrabold text-slate-900">UBT140.KZ</span>
             <span>—</span>
-            <span>Онлайн-платформа подготовки к ЕНТ</span>
+            <span>{isKz ? 'ҰБТ-ға 140 баллға дайындық онлайн академиясы' : 'Онлайн-платформа подготовки к ЕНТ на 140 баллов'}</span>
           </div>
           <p>© 2025-2026 UBT140.KZ. Все права защищены.</p>
         </div>

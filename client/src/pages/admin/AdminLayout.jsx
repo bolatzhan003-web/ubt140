@@ -13,9 +13,12 @@ export default function AdminLayout() {
     <div className="flex min-h-[calc(100vh-64px)]">
       {/* Admin Sidebar */}
       <aside className="w-64 bg-gray-900 text-white flex-shrink-0 hidden md:block">
-        <div className="p-6">
-          <h2 className="text-lg font-bold mb-1">Админ-панель</h2>
-          <p className="text-xs text-gray-400">Управление платформой</p>
+        <div className="p-5 flex items-center gap-3 border-b border-gray-800">
+          <img src="/logo.png" alt="UBT140" className="w-9 h-9 object-contain bg-white rounded-xl p-0.5 shadow-sm" />
+          <div>
+            <h2 className="text-sm font-black text-white tracking-tight">UBT140<span className="text-amber-400">.KZ</span></h2>
+            <p className="text-[11px] text-gray-400">Басқару панелі</p>
+          </div>
         </div>
 
         <nav className="px-3 space-y-1">
