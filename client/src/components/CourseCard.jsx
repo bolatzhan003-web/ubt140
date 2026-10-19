@@ -10,8 +10,8 @@ export default function CourseCard({ course }) {
       to={`/course/${course.id}`}
       className="group flex flex-col bg-white rounded-2xl border border-slate-200/90 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-200 overflow-hidden"
     >
-      {/* High-res Clean Thumbnail */}
-      <div className="relative h-44 overflow-hidden bg-slate-100">
+      {/* High-res Clean 16:9 Thumbnail */}
+      <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
         <img
           src={course.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80'}
           alt={course.title}

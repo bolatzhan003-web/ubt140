@@ -1,66 +1,100 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiMail, FiLock } from 'react-icons/fi';
+import { useLang } from '../context/LanguageContext';
+import { FiPhone, FiLock, FiArrowRight } from 'react-icons/fi';
+import { formatKazakhstanPhone } from '../utils/phone';
 import toast from 'react-hot-toast';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [loginInput, setLoginInput] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { lang } = useLang();
   const navigate = useNavigate();
+
+  const isKz = lang === 'kz';
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value;
+    // If user enters letters/email (e.g. admin@lms.com), keep as is
+    if (/[a-zA-Z@]/.test(val)) {
+      setLoginInput(val);
+    } else {
+      // Otherwise apply KZ phone mask +7 (7XX) XXX-XX-XX
+      setLoginInput(formatKazakhstanPhone(val));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!loginInput.trim() || !password) {
+      toast.error(isKz ? 'Барлық өрістерді толтырыңыз' : 'Заполните все поля');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, password);
-      toast.success('Добро пожаловать!');
+      await login(loginInput.trim(), password);
+      toast.success(isKz ? 'Қош келдіңіз!' : 'Добро пожаловать!');
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Ошибка входа');
+      toast.error(err.response?.data?.error || (isKz ? 'Кіру қатесі' : 'Ошибка входа'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 animate-fade-in">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 bg-[#f8fafc] animate-fade-in">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <span className="text-4xl">🎓</span>
-          <h1 className="text-2xl font-bold text-gray-900 mt-4">Вход в аккаунт</h1>
-          <p className="text-gray-500 mt-2">Войдите, чтобы продолжить обучение</p>
+          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-blue-500/25 mx-auto mb-4">
+            140
+          </div>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            {isKz ? 'Платформаға кіру' : 'Вход в аккаунт'}
+          </h1>
+          <p className="text-xs text-slate-500 mt-1.5">
+            {isKz ? 'ҰБТ дайындығын жалғастыру үшін жүйеге кіріңіз' : 'Войдите, чтобы продолжить подготовку к ЕНТ'}
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-7 sm:p-8">
           <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">
+              {isKz ? 'Телефон нөмірі немесе Email' : 'Номер телефона или Email'}
+            </label>
             <div className="relative">
-              <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
               <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                type="text"
+                value={loginInput}
+                onChange={handlePhoneChange}
                 required
-                placeholder="your@email.com"
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="+7 (7XX) XXX-XX-XX"
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm text-slate-900 font-medium placeholder-slate-400"
               />
             </div>
+            <p className="text-[11px] text-slate-400 mt-1">
+              {isKz ? 'Қазақстандық нөмірді енгізіңіз (маска автоқойылады)' : 'Введите казахстанский номер (маска ставится авто)'}
+            </p>
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Пароль</label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">
+              {isKz ? 'Құпиясөз' : 'Пароль'}
+            </label>
             <div className="relative">
-              <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm text-slate-900 font-medium"
               />
             </div>
           </div>
@@ -68,23 +102,24 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 text-sm"
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 text-sm flex items-center justify-center gap-2"
           >
-            {loading ? 'Вход...' : 'Войти в аккаунт'}
+            {loading ? (isKz ? 'Кіру...' : 'Вход...') : (isKz ? 'Жүйеге кіру' : 'Войти в аккаунт')}
+            <FiArrowRight size={16} />
           </button>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            Нет аккаунта?{' '}
-            <Link to="/register" className="text-blue-600 font-semibold hover:underline">
-              Зарегистрироваться
+          <div className="mt-6 text-center text-xs text-slate-500">
+            {isKz ? 'Аккаунтыңыз жоқ па?' : 'Нет аккаунта?'}{' '}
+            <Link to="/register" className="text-blue-600 font-bold hover:underline">
+              {isKz ? 'Тіркелу' : 'Зарегистрироваться'}
             </Link>
           </div>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-            <p className="text-xs text-gray-500 mb-2 font-semibold">Демо-аккаунты:</p>
-            <p className="text-xs text-gray-500">👤 admin@lms.com / admin123</p>
-            <p className="text-xs text-gray-500">👨‍🏫 instructor@lms.com / instructor123</p>
-            <p className="text-xs text-gray-500">🎓 student@lms.com / student123</p>
+          <div className="mt-6 p-3.5 bg-slate-50 border border-slate-100 rounded-xl">
+            <p className="text-[11px] text-slate-500 font-bold mb-1">
+              {isKz ? 'Тестілік админ аккаунты:' : 'Тестовый аккаунт админа:'}
+            </p>
+            <p className="text-[11px] text-slate-500 font-mono">👤 admin@lms.com / admin123</p>
           </div>
         </form>
       </div>

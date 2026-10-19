@@ -4,9 +4,11 @@ import { FiArrowRight, FiCheck, FiPlay, FiFileText, FiAward, FiTrendingUp } from
 import api from '../api/client';
 import CourseCard from '../components/CourseCard';
 import { useLang } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
   const { t } = useLang();
+  const { user } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,7 +61,7 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <Link
-                  to="/catalog"
+                  to={user ? "/catalog" : "/login"}
                   className="w-full sm:w-auto inline-flex items-center justify-center px-7 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md shadow-blue-500/20 transition-all text-sm"
                 >
                   {t.hero.startBtn} <FiArrowRight className="ml-2" />
@@ -234,7 +236,7 @@ export default function Home() {
             </p>
           </div>
           <Link
-            to="/register"
+            to={user ? "/catalog" : "/register"}
             className="px-8 py-3.5 bg-white hover:bg-slate-50 text-blue-600 text-sm font-semibold rounded-xl shadow-md transition-all whitespace-nowrap"
           >
             {t.home.ctaBtn}

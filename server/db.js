@@ -112,22 +112,58 @@ const db = {
   get: () => readDb(),
   save: (data) => writeDb(data),
 
+  // Phone normalization: +7 (7XX) XXX-XX-XX -> 77XXXXXXXXX
+  normalizePhone: (phone) => {
+    if (!phone) return '';
+    let digits = String(phone).replace(/\D/g, '');
+    if (digits.length === 11 && (digits.startsWith('8') || digits.startsWith('7'))) {
+      digits = '7' + digits.slice(1);
+    }
+    return digits;
+  },
+
   // Users
   findUserByEmail: (email) => {
+    if (!email) return null;
     const data = readDb();
-    return data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    return data.users.find(u => u.email && u.email.toLowerCase() === String(email).toLowerCase());
+  },
+  findUserByPhone: (phone) => {
+    if (!phone) return null;
+    const data = readDb();
+    const clean = db.normalizePhone(phone);
+    if (!clean) return null;
+    return data.users.find(u => {
+      if (u.phone && db.normalizePhone(u.phone) === clean) return true;
+      if (u.phone_normalized && u.phone_normalized === clean) return true;
+      return false;
+    });
+  },
+  findUserByLogin: (login) => {
+    if (!login) return null;
+    const str = String(login).trim();
+    if (str.includes('@')) {
+      return db.findUserByEmail(str);
+    }
+    const byPhone = db.findUserByPhone(str);
+    if (byPhone) return byPhone;
+    return db.findUserByEmail(str);
   },
   findUserById: (id) => {
     const data = readDb();
     return data.users.find(u => u.id === parseInt(id));
   },
-  createUser: ({ name, email, password_hash, role = 'student', avatar = null }) => {
+  createUser: ({ name, phone = null, email = null, password_hash, role = 'student', avatar = null }) => {
     const data = readDb();
     const id = (data.users.reduce((max, u) => Math.max(max, u.id || 0), 0) || 0) + 1;
+    const cleanPhone = phone ? db.normalizePhone(phone) : null;
+    const userEmail = email || (cleanPhone ? `user_${cleanPhone}@ubt140.kz` : `user_${id}@ubt140.kz`);
     const user = {
       id,
       name,
-      email,
+      phone: phone || null,
+      phone_normalized: cleanPhone,
+      email: userEmail,
       password_hash,
       role,
       avatar,
@@ -141,6 +177,9 @@ const db = {
     const data = readDb();
     const idx = data.users.findIndex(u => u.id === parseInt(id));
     if (idx !== -1) {
+      if (updates.phone) {
+        updates.phone_normalized = db.normalizePhone(updates.phone);
+      }
       data.users[idx] = { ...data.users[idx], ...updates };
       writeDb(data);
       return data.users[idx];

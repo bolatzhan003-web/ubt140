@@ -143,7 +143,7 @@ export default function CoursePage() {
               <img
                 src={course.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}
                 alt={course.title}
-                className="w-full h-60 object-cover rounded-2xl border border-slate-200 shadow-md"
+                className="w-full aspect-video object-cover rounded-2xl border border-slate-200 shadow-md"
               />
             </div>
           </div>

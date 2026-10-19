@@ -9,23 +9,36 @@ const router = express.Router();
 // POST /api/auth/register
 router.post('/register', (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, phone, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Заполните все поля' });
+    if (!name || (!phone && !email) || !password) {
+      return res.status(400).json({ error: 'Аты-жөніңізді, телефон нөміріңізді және құпиясөзді енгізіңіз' });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ error: 'Пароль должен быть не менее 6 символов' });
+      return res.status(400).json({ error: 'Құпиясөз кемінде 6 таңбадан тұруы керек' });
     }
 
-    const existing = db.findUserByEmail(email);
-    if (existing) {
-      return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
+    if (phone) {
+      const cleanPhone = db.normalizePhone(phone);
+      if (cleanPhone.length < 10) {
+        return res.status(400).json({ error: 'Телефон нөмірін толық енгізіңіз (+7 7XX XXX-XX-XX)' });
+      }
+      const existingPhone = db.findUserByPhone(phone);
+      if (existingPhone) {
+        return res.status(400).json({ error: 'Бұл телефон нөмірі тіркелген. Кіру бетіне өтіңіз' });
+      }
+    }
+
+    if (email) {
+      const existingEmail = db.findUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ error: 'Бұл email тіркелген' });
+      }
     }
 
     const password_hash = bcrypt.hashSync(password, 10);
-    const user = db.createUser({ name, email, password_hash });
+    const user = db.createUser({ name, phone, email, password_hash });
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
@@ -33,6 +46,7 @@ router.post('/register', (req, res) => {
       user: {
         id: user.id,
         name: user.name,
+        phone: user.phone,
         email: user.email,
         role: user.role,
         avatar: user.avatar
@@ -40,27 +54,28 @@ router.post('/register', (req, res) => {
     });
   } catch (err) {
     console.error('Register error:', err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Сервер қатесі' });
   }
 });
 
 // POST /api/auth/login
 router.post('/login', (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { login, email, phone, password } = req.body;
+    const identifier = login || phone || email;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Заполните все поля' });
+    if (!identifier || !password) {
+      return res.status(400).json({ error: 'Телефон нөмірі мен құпиясөзді енгізіңіз' });
     }
 
-    const user = db.findUserByEmail(email);
+    const user = db.findUserByLogin(identifier);
     if (!user) {
-      return res.status(400).json({ error: 'Неверный email или пароль' });
+      return res.status(400).json({ error: 'Телефон нөмірі немесе құпиясөз қате' });
     }
 
     const valid = bcrypt.compareSync(password, user.password_hash);
     if (!valid) {
-      return res.status(400).json({ error: 'Неверный email или пароль' });
+      return res.status(400).json({ error: 'Телефон нөмірі немесе құпиясөз қате' });
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
@@ -70,6 +85,7 @@ router.post('/login', (req, res) => {
       user: {
         id: user.id,
         name: user.name,
+        phone: user.phone,
         email: user.email,
         role: user.role,
         avatar: user.avatar
@@ -77,7 +93,7 @@ router.post('/login', (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Сервер қатесі' });
   }
 });
 

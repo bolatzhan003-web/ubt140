@@ -194,7 +194,7 @@ export default function AdminCourses() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {course.thumbnail && (
-                          <img src={course.thumbnail} alt="" className="w-12 h-12 rounded-xl object-cover shadow-sm" />
+                          <img src={course.thumbnail} alt="" className="w-16 aspect-video rounded-lg object-cover shadow-sm" />
                         )}
                         <div>
                           <p className="font-bold text-slate-900 text-sm">{course.title}</p>

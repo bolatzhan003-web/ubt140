@@ -53,6 +53,17 @@
       "role": "student",
       "avatar": null,
       "created_at": "2026-10-19T13:45:44.526Z"
+    },
+    {
+      "id": 7,
+      "name": "Алмас Қайратұлы",
+      "phone": "+7 (705) 644-97-21",
+      "phone_normalized": "77056449721",
+      "email": "user_77056449721@ubt140.kz",
+      "password_hash": "$2a$10$5MW5KzJtK/N1dJNsBi0YZucqH7bBG45DhoAqXuoJw6eXDYLerzl2C",
+      "role": "student",
+      "avatar": null,
+      "created_at": "2026-10-19T14:21:11.438Z"
     }
   ],
   "courses": [
