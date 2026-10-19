@@ -114,13 +114,6 @@ export default function Login() {
               {isKz ? 'Тіркелу' : 'Зарегистрироваться'}
             </Link>
           </div>
-
-          <div className="mt-6 p-3.5 bg-slate-50 border border-slate-100 rounded-xl">
-            <p className="text-[11px] text-slate-500 font-bold mb-1">
-              {isKz ? 'Тестілік админ аккаунты:' : 'Тестовый аккаунт админа:'}
-            </p>
-            <p className="text-[11px] text-slate-500 font-mono">👤 admin@lms.com / admin123</p>
-          </div>
         </form>
       </div>
     </div>

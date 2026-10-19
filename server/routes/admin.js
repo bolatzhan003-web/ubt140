@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { authenticate, requireRole } = require('../middleware/auth');
 
@@ -35,6 +36,7 @@ router.get('/users', (req, res) => {
       return {
         id: u.id,
         name: u.name,
+        phone: u.phone || null,
         email: u.email,
         role: u.role,
         avatar: u.avatar,
@@ -47,7 +49,8 @@ router.get('/users', (req, res) => {
       const q = search.toLowerCase();
       users = users.filter(u => 
         (u.name && u.name.toLowerCase().includes(q)) || 
-        (u.email && u.email.toLowerCase().includes(q))
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.toLowerCase().includes(q))
       );
     }
 
@@ -94,6 +97,25 @@ router.delete('/users/:id', (req, res) => {
   } catch (err) {
     console.error('Delete user error:', err);
     res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// PUT /api/admin/users/:id/password - Admin resets student password
+router.put('/users/:id/password', (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Құпиясөз кемінде 6 символдан тұруы керек' });
+    }
+    const password_hash = bcrypt.hashSync(password, 10);
+    const user = db.updateUser(req.params.id, { password_hash });
+    if (!user) {
+      return res.status(404).json({ error: 'Қолданушы табылмады' });
+    }
+    res.json({ message: 'Құпиясөз сәтті жаңартылды' });
+  } catch (err) {
+    console.error('Admin change password error:', err);
+    res.status(500).json({ error: 'Сервер қатесі' });
   }
 });
 

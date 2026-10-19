@@ -198,13 +198,75 @@ export default function VideoPlayer({ url }) {
     }
   };
 
+  useEffect(() => {
+    const handleFsChange = () => {
+      const isFs = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      if (!isFs && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener('webkitfullscreenchange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      document.removeEventListener('webkitfullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen]);
+
   const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {});
+    const elem = containerRef.current;
+    if (!elem) return;
+
+    const isCurrentlyFs = isFullscreen || Boolean(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+
+    if (!isCurrentlyFs) {
+      // Enter fullscreen: try Native API first with iOS / Android prefixes
+      const req = elem.requestFullscreen ||
+                  elem.webkitRequestFullscreen ||
+                  elem.webkitEnterFullscreen ||
+                  elem.mozRequestFullScreen ||
+                  elem.msRequestFullscreen;
+      if (req) {
+        try {
+          const p = req.call(elem);
+          if (p && typeof p.catch === 'function') {
+            p.catch(() => setIsFullscreen(true));
+          }
+        } catch {
+          setIsFullscreen(true);
+        }
+      }
+      // Always activate CSS full viewport for guaranteed mobile coverage
       setIsFullscreen(true);
     } else {
-      document.exitFullscreen().catch(() => {});
+      // Exit fullscreen
+      const exit = document.exitFullscreen ||
+                   document.webkitExitFullscreen ||
+                   document.mozCancelFullScreen ||
+                   document.msExitFullscreen;
+      if (exit && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { exit.call(document).catch(() => {}); } catch {}
+      }
       setIsFullscreen(false);
     }
   };
@@ -229,7 +291,11 @@ export default function VideoPlayer({ url }) {
       ref={containerRef}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => isPlaying && setShowControls(false)}
-      className="yt-player-container relative aspect-video rounded-2xl overflow-hidden bg-black shadow-xl select-none group"
+      className={`yt-player-container select-none group bg-black transition-all ${
+        isFullscreen
+          ? 'fixed inset-0 z-[9999] w-screen h-screen rounded-none flex items-center justify-center'
+          : 'relative aspect-video rounded-2xl overflow-hidden shadow-xl'
+      }`}
     >
       {/* 
         YouTube Player Target (Исходный размер 100% без зума):
