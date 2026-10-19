@@ -18,7 +18,6 @@ COPY package*.json ./
 RUN npm install --omit=dev
 
 COPY server/ ./server/
-COPY lms_database.json ./
 COPY --from=builder /app/client/dist ./client/dist
 
 ENV NODE_ENV=production
