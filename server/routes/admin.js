@@ -62,6 +62,65 @@ router.get('/users', (req, res) => {
   }
 });
 
+// POST /api/admin/users - Admin manually creates a new user (student / teacher / admin)
+router.post('/users', (req, res) => {
+  try {
+    const { name, phone, email, password, role = 'student', course_ids = [] } = req.body;
+
+    if (!name || (!phone && !email) || !password) {
+      return res.status(400).json({ error: 'Аты-жөнін, телефон немесе email, және құпиясөзді енгізіңіз' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Құпиясөз кемінде 6 символдан тұруы керек' });
+    }
+
+    if (phone) {
+      const existingPhone = db.findUserByPhone(phone);
+      if (existingPhone) {
+        return res.status(400).json({ error: 'Бұл телефон нөмірімен қолданушы тіркелген' });
+      }
+    }
+
+    if (email) {
+      const existingEmail = db.findUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ error: 'Бұл email-мен қолданушы тіркелген' });
+      }
+    }
+
+    const password_hash = bcrypt.hashSync(password, 10);
+    const user = db.createUser({
+      name,
+      phone,
+      email,
+      password_hash,
+      role
+    });
+
+    // If courses selected, enroll immediately
+    if (Array.isArray(course_ids) && course_ids.length > 0) {
+      for (const cid of course_ids) {
+        db.enroll(user.id, cid);
+      }
+    }
+
+    res.status(201).json({
+      user: {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        role: user.role
+      },
+      message: 'Қолданушы сәтті қосылды'
+    });
+  } catch (err) {
+    console.error('Create user by admin error:', err);
+    res.status(500).json({ error: 'Сервер қатесі' });
+  }
+});
+
 // PUT /api/admin/users/:id/role
 router.put('/users/:id/role', (req, res) => {
   try {

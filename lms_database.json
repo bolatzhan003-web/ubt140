@@ -1,6 +1,16 @@
 {
   "users": [
     {
+      "id": 8,
+      "name": "Рахат (Супер-Администратор)",
+      "email": "rahat.03.14@mail.ru",
+      "phone": null,
+      "password_hash": "$2a$10$Wzb9kn1ipYHv8POsxN0Ylu36HdP2z292P4RcPCCjiKtXohMrkHKBC",
+      "role": "admin",
+      "avatar": null,
+      "created_at": "2026-10-19T14:31:25.354Z"
+    },
+    {
       "id": 1,
       "name": "Әкімшілік UBT140",
       "email": "admin@lms.com",
@@ -64,6 +74,17 @@
       "role": "student",
       "avatar": null,
       "created_at": "2026-10-19T14:21:11.438Z"
+    },
+    {
+      "id": 9,
+      "name": "Бақытжан Төлеубаев",
+      "phone": "+7 (777) 555-12-34",
+      "phone_normalized": "77775551234",
+      "email": "user_77775551234@ubt140.kz",
+      "password_hash": "$2a$10$i0Hw0DSdqOMs1hpOEm8Fl.r9X9jS5ZXEP0P5f8ajpS5up4TEDytTG",
+      "role": "student",
+      "avatar": null,
+      "created_at": "2026-10-19T14:34:02.827Z"
     }
   ],
   "courses": [
@@ -318,6 +339,18 @@
       "user_id": 6,
       "course_id": 2,
       "enrolled_at": "2026-10-19T13:45:44.540Z"
+    },
+    {
+      "id": 14,
+      "user_id": 9,
+      "course_id": 1,
+      "enrolled_at": "2026-10-19T14:34:02.829Z"
+    },
+    {
+      "id": 15,
+      "user_id": 9,
+      "course_id": 2,
+      "enrolled_at": "2026-10-19T14:34:02.831Z"
     }
   ],
   "progress": [

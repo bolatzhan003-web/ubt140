@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FiSearch, FiTrash2, FiUserPlus, FiX, FiCheck, FiBookOpen, FiKey, FiLock } from 'react-icons/fi';
+import { FiSearch, FiTrash2, FiUserPlus, FiX, FiCheck, FiBookOpen, FiKey, FiLock, FiPhone, FiUser } from 'react-icons/fi';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
+import { formatKazakhstanPhone } from '../../utils/phone';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -18,6 +19,18 @@ export default function AdminUsers() {
   const [passwordModalUser, setPasswordModalUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
+
+  // Create User Modal
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    password: '',
+    role: 'student',
+    course_ids: []
+  });
+  const [creatingUser, setCreatingUser] = useState(false);
 
   const loadUsers = () => {
     const params = search ? `?search=${search}` : '';
@@ -93,6 +106,37 @@ export default function AdminUsers() {
     }
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    if (!createForm.name || (!createForm.phone && !createForm.email) || !createForm.password) {
+      toast.error('Заполните все обязательные поля');
+      return;
+    }
+    if (createForm.password.length < 6) {
+      toast.error('Пароль должен быть не менее 6 символов');
+      return;
+    }
+    setCreatingUser(true);
+    try {
+      await api.post('/admin/users', createForm);
+      toast.success('Пользователь успешно создан!');
+      setShowCreateModal(false);
+      setCreateForm({
+        name: '',
+        phone: '',
+        email: '',
+        password: '',
+        role: 'student',
+        course_ids: []
+      });
+      loadUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Ошибка создания пользователя');
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
   const changeRole = async (userId, role) => {
     try {
       await api.put(`/admin/users/${userId}/role`, { role });
@@ -123,9 +167,16 @@ export default function AdminUsers() {
             Пользователи и доступы к курсам
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Вы можете открывать ученику доступ сразу ко всем или нескольким выбранным предметам
+            Вы можете создавать пользователей и открывать доступ к предметам
           </p>
         </div>
+
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all self-start sm:self-auto"
+        >
+          <FiUserPlus size={16} /> Қолданушы қосу (Создать пользователя)
+        </button>
       </div>
 
       {/* Multi-Course Access Modal */}
@@ -402,6 +453,170 @@ export default function AdminUsers() {
                   className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm disabled:opacity-50"
                 >
                   {savingPassword ? 'Сохранение...' : 'Сақтау (Сохранить)'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">
+                  Қолданушы қосу (Создать пользователя)
+                </h2>
+                <p className="text-[11px] text-slate-500">
+                  Ученик, преподаватель или администратор
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="p-6 overflow-y-auto space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Аты-жөні (ФИО) *
+                </label>
+                <div className="relative">
+                  <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    value={createForm.name}
+                    onChange={e => setCreateForm({ ...createForm, name: e.target.value })}
+                    required
+                    placeholder="Мысалы: Арман Серікұлы"
+                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Телефон нөмірі (WhatsApp) *
+                </label>
+                <div className="relative">
+                  <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input
+                    type="text"
+                    value={createForm.phone}
+                    onChange={e => setCreateForm({ ...createForm, phone: formatKazakhstanPhone(e.target.value) })}
+                    required
+                    placeholder="+7 (7XX) XXX-XX-XX"
+                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+
+              {/* Role & Password */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Рөлі (Роль) *
+                  </label>
+                  <select
+                    value={createForm.role}
+                    onChange={e => setCreateForm({ ...createForm, role: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white"
+                  >
+                    <option value="student">Оқушы (Ученик)</option>
+                    <option value="instructor">Оқытушы (Преподаватель)</option>
+                    <option value="admin">Администратор</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Құпиясөз (Пароль) *
+                  </label>
+                  <div className="relative">
+                    <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input
+                      type="text"
+                      value={createForm.password}
+                      onChange={e => setCreateForm({ ...createForm, password: e.target.value })}
+                      required
+                      placeholder="Кемінде 6 таңба"
+                      className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Immediate Course Assignment */}
+              {createForm.role === 'student' && courses.length > 0 && (
+                <div className="pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Бірден курсқа қолжетімділік беру (необязательно)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (createForm.course_ids.length === courses.length) {
+                          setCreateForm({ ...createForm, course_ids: [] });
+                        } else {
+                          setCreateForm({ ...createForm, course_ids: courses.map(c => c.id) });
+                        }
+                      }}
+                      className="text-[11px] font-bold text-blue-600 hover:underline"
+                    >
+                      {createForm.course_ids.length === courses.length ? 'Барлығын өшіру' : 'Барлығын таңдау'}
+                    </button>
+                  </div>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                    {courses.map(course => {
+                      const checked = createForm.course_ids.includes(course.id);
+                      return (
+                        <label
+                          key={course.id}
+                          className={`flex items-center gap-2 p-2 rounded-lg text-xs cursor-pointer transition-colors ${
+                            checked ? 'bg-blue-50 border border-blue-200 text-blue-900 font-semibold' : 'hover:bg-white text-slate-700'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const ids = checked
+                                ? createForm.course_ids.filter(id => id !== course.id)
+                                : [...createForm.course_ids, course.id];
+                              setCreateForm({ ...createForm, course_ids: ids });
+                            }}
+                            className="rounded text-blue-600"
+                          />
+                          <span className="truncate">{course.title}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                >
+                  Болдырмау (Отмена)
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingUser}
+                  className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 disabled:opacity-50"
+                >
+                  {creatingUser ? 'Қосылуда...' : 'Қолданушыны қосу'}
                 </button>
               </div>
             </form>
