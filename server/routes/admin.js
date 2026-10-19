@@ -178,6 +178,20 @@ router.put('/users/:id/password', (req, res) => {
   }
 });
 
+// GET /api/admin/users/:id/progress - Get comprehensive student progress & watch percentages
+router.get('/users/:id/progress', (req, res) => {
+  try {
+    const details = db.getUserProgressDetails(req.params.id);
+    if (!details) {
+      return res.status(404).json({ error: 'Қолданушы табылмады' });
+    }
+    res.json(details);
+  } catch (err) {
+    console.error('Admin user progress error:', err);
+    res.status(500).json({ error: 'Сервер қатесі' });
+  }
+});
+
 // GET /api/admin/courses - ALL courses including unpublished
 router.get('/courses', (req, res) => {
   try {

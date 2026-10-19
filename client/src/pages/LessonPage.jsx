@@ -62,6 +62,23 @@ export default function LessonPage() {
     }
   };
 
+  const saveWatchProgress = async ({ percent, currentTime, duration }) => {
+    try {
+      await api.post(`/lessons/${id}/watch-progress`, { percent, currentTime, duration });
+      setProgress(prev => {
+        const lid = parseInt(id);
+        const existing = prev.find(p => p.lesson_id === lid);
+        if (existing) {
+          return prev.map(p => p.lesson_id === lid ? { ...p, watch_percent: percent, completed: percent >= 80 ? 1 : p.completed } : p);
+        } else {
+          return [...prev, { lesson_id: lid, watch_percent: percent, completed: percent >= 80 ? 1 : 0 }];
+        }
+      });
+    } catch (err) {
+      // silent background sync
+    }
+  };
+
   const handleSubmitAssignment = async (assignmentId) => {
     if (!submissionText.trim()) {
       toast.error('Введите текст ответа');
@@ -156,9 +173,13 @@ export default function LessonPage() {
             <span className="text-slate-900 font-semibold truncate">{lesson.title}</span>
           </div>
 
-          {/* YouTube Video Player Embed */}
-          <div className="bg-black rounded-2xl overflow-hidden border border-slate-200 shadow-xl mb-6">
-            <VideoPlayer url={lesson.video_url} />
+          {/* YouTube Video Player Embed with Watch Progress */}
+          <div className="mb-6">
+            <VideoPlayer
+              url={lesson.video_url}
+              initialPercent={progress.find(p => p.lesson_id === lesson.id)?.watch_percent || (isCompleted ? 100 : 0)}
+              onProgress={saveWatchProgress}
+            />
           </div>
 
           {/* Lesson title & completion */}

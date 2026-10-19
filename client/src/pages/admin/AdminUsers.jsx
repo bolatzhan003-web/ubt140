@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FiSearch, FiTrash2, FiUserPlus, FiX, FiCheck, FiBookOpen, FiKey, FiLock, FiPhone, FiUser } from 'react-icons/fi';
+import { 
+  FiSearch, FiTrash2, FiUserPlus, FiX, FiCheck, FiBookOpen, 
+  FiKey, FiLock, FiPhone, FiUser, FiTrendingUp, FiAward, FiVideo, FiCheckCircle 
+} from 'react-icons/fi';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import { formatKazakhstanPhone } from '../../utils/phone';
@@ -9,6 +12,11 @@ export default function AdminUsers() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  // Student Progress Modal
+  const [progressModalUser, setProgressModalUser] = useState(null);
+  const [userProgressData, setUserProgressData] = useState(null);
+  const [loadingProgress, setLoadingProgress] = useState(false);
   
   // Multi-course Access Management Modal
   const [selectedUser, setSelectedUser] = useState(null);
@@ -50,6 +58,20 @@ export default function AdminUsers() {
     setSelectedUser(user);
     const existingIds = (user.enrolled_courses || []).map(c => c.id);
     setSelectedCourseIds(existingIds);
+  };
+
+  const openProgressModal = async (user) => {
+    setProgressModalUser(user);
+    setLoadingProgress(true);
+    setUserProgressData(null);
+    try {
+      const res = await api.get(`/admin/users/${user.id}/progress`);
+      setUserProgressData(res.data);
+    } catch (err) {
+      toast.error('Прогресс деректерін жүктеу қатесі');
+    } finally {
+      setLoadingProgress(false);
+    }
   };
 
   const toggleCourseSelect = (courseId) => {
@@ -362,6 +384,16 @@ export default function AdminUsers() {
                     {/* Action buttons */}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {/* Student Progress Button */}
+                        <button
+                          onClick={() => openProgressModal(user)}
+                          className="px-2.5 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all flex items-center gap-1 border border-emerald-200"
+                          title="Оқушының прогресі мен видео көру пайызын көру"
+                        >
+                          <FiTrendingUp size={13} className="text-emerald-600" />
+                          Прогресс
+                        </button>
+
                         {/* Change Password Button */}
                         <button
                           onClick={() => { setPasswordModalUser(user); setNewPassword(''); }}
@@ -620,6 +652,170 @@ export default function AdminUsers() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Student Progress & Achievements Modal */}
+      {progressModalUser && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/70">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
+                  {progressModalUser.name?.charAt(0)}
+                </div>
+                <div>
+                  <h2 className="text-base font-black text-slate-900">{progressModalUser.name}</h2>
+                  <p className="text-xs text-slate-500">
+                    {progressModalUser.phone || progressModalUser.email} • Оқу үлгерімі мен видео көру деңгейі
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setProgressModalUser(null)} 
+                className="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {loadingProgress ? (
+                <div className="py-16 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-2" />
+                  <p className="text-xs text-slate-400 font-medium">Прогресс деректері жүктелуде...</p>
+                </div>
+              ) : userProgressData ? (
+                <>
+                  {/* Summary Stat Chips */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-slate-900">{userProgressData.stats.enrolled_courses_count}</p>
+                      <p className="text-[11px] text-slate-500 font-medium">Курсқа қатысады</p>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-emerald-600">{userProgressData.stats.total_completed_lessons}</p>
+                      <p className="text-[11px] text-slate-500 font-medium">Өтілген сабақ</p>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-blue-600">{userProgressData.stats.completed_courses_count}</p>
+                      <p className="text-[11px] text-slate-500 font-medium">Аяқталған курс</p>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
+                      <p className="text-lg font-black text-amber-600">
+                        {userProgressData.achievements.filter(a => a.unlocked).length}/{userProgressData.achievements.length}
+                      </p>
+                      <p className="text-[11px] text-slate-500 font-medium">Жетістіктер</p>
+                    </div>
+                  </div>
+
+                  {/* Achievements Badges */}
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                      <FiAward className="text-amber-500" /> Оқушының бейдждері
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {userProgressData.achievements.map(a => (
+                        <div
+                          key={a.id}
+                          className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
+                            a.unlocked
+                              ? 'bg-amber-50/70 border-amber-200 text-amber-900 font-bold'
+                              : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'
+                          }`}
+                        >
+                          <span className="text-lg">{a.icon}</span>
+                          <div className="truncate">
+                            <p className="truncate text-[11px] leading-tight">{a.title}</p>
+                            <p className="text-[9px] text-slate-400 font-normal truncate">{a.unlocked ? 'Ашылған' : a.progress}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Course by Course Breakdown */}
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                      Курстар мен бейнесабақтарды көру пайызы
+                    </h3>
+                    {userProgressData.courses.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic">Оқушы әлі ешбір курсқа жазылмаған</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {userProgressData.courses.map(c => (
+                          <div key={c.course_id} className="border border-slate-200 rounded-2xl p-4 bg-white shadow-sm">
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="font-bold text-xs text-slate-900 truncate">{c.course_title}</span>
+                              <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+                                {c.completed_count}/{c.total_lessons} ({c.progress_percent}%)
+                              </span>
+                            </div>
+
+                            {/* Overall progress bar */}
+                            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-3">
+                              <div
+                                className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                                style={{ width: `${c.progress_percent}%` }}
+                              />
+                            </div>
+
+                            {/* Lessons List */}
+                            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                              {c.lessons.map((les, idx) => (
+                                <div
+                                  key={les.lesson_id}
+                                  className="flex items-center justify-between p-2 rounded-xl bg-slate-50 text-xs border border-slate-100"
+                                >
+                                  <div className="flex items-center gap-2 truncate pr-2">
+                                    {les.completed || les.watch_percent >= 80 ? (
+                                      <FiCheckCircle size={14} className="text-emerald-500 flex-shrink-0" />
+                                    ) : (
+                                      <FiVideo size={13} className="text-slate-400 flex-shrink-0" />
+                                    )}
+                                    <span className="truncate text-slate-700 text-[11px] font-medium">
+                                      {idx + 1}. {les.title}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <div className="w-16 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full ${
+                                          les.completed || les.watch_percent >= 80 ? 'bg-emerald-500' : 'bg-sky-500'
+                                        }`}
+                                        style={{ width: `${les.watch_percent}%` }}
+                                      />
+                                    </div>
+                                    <span className={`text-[10px] font-bold w-9 text-right ${
+                                      les.completed || les.watch_percent >= 80 ? 'text-emerald-700 font-extrabold' : 'text-slate-600'
+                                    }`}>
+                                      {les.watch_percent}%
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setProgressModalUser(null)}
+                className="px-5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl shadow-sm"
+              >
+                Жабу (Закрыть)
+              </button>
+            </div>
           </div>
         </div>
       )}

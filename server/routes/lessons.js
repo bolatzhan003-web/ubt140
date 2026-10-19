@@ -135,6 +135,36 @@ router.post('/lessons/:id/complete', authenticate, (req, res) => {
   }
 });
 
+// POST /api/lessons/:id/watch-progress - Track real-time video watch percentage
+router.post('/lessons/:id/watch-progress', authenticate, (req, res) => {
+  try {
+    const { percent, currentTime, duration } = req.body;
+    const progress = db.updateLessonProgress(req.user.id, req.params.id, {
+      percent,
+      currentTime,
+      duration
+    });
+    res.json({ success: true, progress });
+  } catch (err) {
+    console.error('Watch progress error:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// GET /api/achievements/my - Student achievements and progress analytics
+router.get('/achievements/my', authenticate, (req, res) => {
+  try {
+    const details = db.getUserProgressDetails(req.user.id);
+    if (!details) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+    res.json(details);
+  } catch (err) {
+    console.error('Achievements error:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 // ===== ASSIGNMENTS =====
 router.post('/assignments', authenticate, requireRole('admin', 'instructor'), (req, res) => {
   try {

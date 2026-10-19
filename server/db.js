@@ -382,9 +382,50 @@ const db = {
       return {
         lesson_id: l.id,
         completed: prog ? prog.completed : 0,
-        completed_at: prog ? prog.completed_at : null
+        completed_at: prog ? prog.completed_at : null,
+        watch_percent: prog ? (prog.watch_percent || (prog.completed ? 100 : 0)) : 0,
+        last_position_sec: prog ? (prog.last_position_sec || 0) : 0,
+        duration_sec: prog ? (prog.duration_sec || 0) : 0
       };
     });
+  },
+
+  updateLessonProgress: (userId, lessonId, { percent = 0, currentTime = 0, duration = 0 }) => {
+    const data = readDb();
+    const uid = parseInt(userId);
+    const lid = parseInt(lessonId);
+    const cleanPercent = Math.min(100, Math.max(0, Math.round(Number(percent) || 0)));
+    const cleanTime = Math.max(0, Math.round(Number(currentTime) || 0));
+    const cleanDuration = Math.max(0, Math.round(Number(duration) || 0));
+
+    let prog = data.progress.find(p => p.user_id === uid && p.lesson_id === lid);
+    const isNowCompleted = cleanPercent >= 80;
+
+    if (prog) {
+      prog.watch_percent = Math.max(prog.watch_percent || 0, cleanPercent);
+      if (cleanTime > 0) prog.last_position_sec = cleanTime;
+      if (cleanDuration > 0) prog.duration_sec = cleanDuration;
+      if (isNowCompleted && !prog.completed) {
+        prog.completed = 1;
+        prog.completed_at = new Date().toISOString();
+      }
+      prog.updated_at = new Date().toISOString();
+    } else {
+      prog = {
+        id: (data.progress.reduce((max, p) => Math.max(max, p.id || 0), 0) || 0) + 1,
+        user_id: uid,
+        lesson_id: lid,
+        watch_percent: cleanPercent,
+        last_position_sec: cleanTime,
+        duration_sec: cleanDuration,
+        completed: isNowCompleted ? 1 : 0,
+        completed_at: isNowCompleted ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString()
+      };
+      data.progress.push(prog);
+    }
+    writeDb(data);
+    return prog;
   },
 
   markLessonComplete: (userId, lessonId) => {
@@ -394,17 +435,139 @@ const db = {
     let prog = data.progress.find(p => p.user_id === uid && p.lesson_id === lid);
     if (prog) {
       prog.completed = 1;
+      prog.watch_percent = Math.max(prog.watch_percent || 0, 100);
       prog.completed_at = new Date().toISOString();
+      prog.updated_at = new Date().toISOString();
     } else {
       data.progress.push({
         id: (data.progress.reduce((max, p) => Math.max(max, p.id || 0), 0) || 0) + 1,
         user_id: uid,
         lesson_id: lid,
+        watch_percent: 100,
         completed: 1,
-        completed_at: new Date().toISOString()
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
     }
     writeDb(data);
+  },
+
+  getUserProgressDetails: (userId) => {
+    const data = readDb();
+    const uid = parseInt(userId);
+    const user = data.users.find(u => u.id === uid);
+    if (!user) return null;
+
+    const userEnrollments = data.enrollments.filter(e => e.user_id === uid);
+    const coursesProgress = userEnrollments.map(e => {
+      const course = data.courses.find(c => c.id === e.course_id);
+      if (!course) return null;
+
+      const courseSections = data.sections.filter(s => s.course_id === course.id);
+      const sectionIds = courseSections.map(s => s.id);
+      const courseLessons = data.lessons.filter(l => sectionIds.includes(l.section_id));
+
+      const lessonDetails = courseLessons.map(l => {
+        const prog = data.progress.find(p => p.user_id === uid && p.lesson_id === l.id);
+        return {
+          lesson_id: l.id,
+          title: l.title,
+          video_url: l.video_url,
+          duration: l.duration,
+          completed: prog ? prog.completed : 0,
+          completed_at: prog ? prog.completed_at : null,
+          watch_percent: prog ? (prog.watch_percent || (prog.completed ? 100 : 0)) : 0
+        };
+      });
+
+      const totalLessons = courseLessons.length;
+      const completedCount = lessonDetails.filter(l => l.completed).length;
+      const totalWatchPercent = totalLessons > 0
+        ? Math.round(lessonDetails.reduce((sum, l) => sum + (l.watch_percent || 0), 0) / totalLessons)
+        : 0;
+
+      return {
+        course_id: course.id,
+        course_title: course.title,
+        category: course.category,
+        thumbnail: course.thumbnail,
+        enrolled_at: e.enrolled_at,
+        total_lessons: totalLessons,
+        completed_count: completedCount,
+        progress_percent: totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0,
+        average_watch_percent: totalWatchPercent,
+        lessons: lessonDetails
+      };
+    }).filter(Boolean);
+
+    // Compute achievements
+    const allProgress = data.progress.filter(p => p.user_id === uid);
+    const totalCompletedLessons = allProgress.filter(p => p.completed).length;
+    const completedCoursesCount = coursesProgress.filter(c => c.progress_percent === 100).length;
+    const submissions = (data.assignment_submissions || []).filter(s => s.user_id === uid);
+
+    const achievements = [
+      {
+        id: 'first_lesson',
+        title: 'Алғашқы қадам',
+        desc: 'Алғашқы видеосабақты 80%+ көріп аяқтау',
+        icon: '🚀',
+        unlocked: totalCompletedLessons >= 1,
+        progress: Math.min(1, totalCompletedLessons) + '/1'
+      },
+      {
+        id: 'pace_5',
+        title: 'Қарқынды оқу',
+        desc: 'Кемінде 5 сабақты толық игеру',
+        icon: '⚡',
+        unlocked: totalCompletedLessons >= 5,
+        progress: Math.min(5, totalCompletedLessons) + '/5'
+      },
+      {
+        id: 'half_way',
+        title: 'Экватор — Жарты жол',
+        desc: 'Курстың 50%-дан астамын аяқтау',
+        icon: '🎯',
+        unlocked: coursesProgress.some(c => c.progress_percent >= 50),
+        progress: coursesProgress.length > 0 ? Math.max(...coursesProgress.map(c => c.progress_percent), 0) + '%' : '0%'
+      },
+      {
+        id: 'champion_140',
+        title: 'ҰБТ 140 Чемпионы',
+        desc: 'Курсты 100% толық аяқтау',
+        icon: '🏆',
+        unlocked: completedCoursesCount >= 1,
+        progress: completedCoursesCount + ' курс'
+      },
+      {
+        id: 'test_master',
+        title: 'Тест шебері',
+        desc: 'Бекіту тапсырмасын сәтті орындау',
+        icon: '📝',
+        unlocked: submissions.length >= 1,
+        progress: submissions.length + ' тапсырма'
+      }
+    ];
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        avatar: user.avatar,
+        created_at: user.created_at
+      },
+      courses: coursesProgress,
+      stats: {
+        enrolled_courses_count: coursesProgress.length,
+        total_completed_lessons: totalCompletedLessons,
+        completed_courses_count: completedCoursesCount,
+        submissions_count: submissions.length
+      },
+      achievements
+    };
   },
 
   // Sections & Lessons
