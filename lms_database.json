@@ -1,0 +1,329 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Әкімшілік UBT140",
+      "email": "admin@lms.com",
+      "password_hash": "$2a$10$jvjtuIImNsqL.jAUddwUVeJjJpYgG1g0DNqbNOFDB2EhlZ7jxzcW6",
+      "role": "admin",
+      "avatar": null,
+      "created_at": "2026-10-19T13:03:06.069Z"
+    },
+    {
+      "id": 2,
+      "name": "Ерлан Сағындықов (Математика)",
+      "email": "instructor@lms.com",
+      "password_hash": "$2a$10$jzC6D1M27Fnt2OBPVFu3duscYPslifx9qvTL4UxOyGCa55A1Xcabq",
+      "role": "instructor",
+      "avatar": null,
+      "created_at": "2026-10-19T13:03:06.154Z"
+    },
+    {
+      "id": 3,
+      "name": "Айнұр Бақытқызы (Тарих)",
+      "email": "instructor2@lms.com",
+      "password_hash": "$2a$10$pqGBpi5DY/z/noeyX9AEWeH1deta6N609ZjRlOnfVk.udXRc1bZYC",
+      "role": "instructor",
+      "avatar": null,
+      "created_at": "2026-10-19T13:03:06.230Z"
+    },
+    {
+      "id": 4,
+      "name": "Нұрсұлтан Әлихан (Оқушы)",
+      "email": "student@lms.com",
+      "password_hash": "$2a$10$j/yh7iHSwIEg3MFWaAYT7O7eQP2dn3sCO6DcBk.Su.7rkKRVJrtEG",
+      "role": "student",
+      "avatar": null,
+      "created_at": "2026-10-19T13:03:06.318Z"
+    },
+    {
+      "id": 5,
+      "name": "Аружан Серік (Оқушы)",
+      "email": "student2@lms.com",
+      "password_hash": "$2a$10$WlQGaxCZeqlIxj6tVqyKyOJ4LZp3xuQNMxU4pVCbpXXFCbvWDCTAq",
+      "role": "student",
+      "avatar": null,
+      "created_at": "2026-10-19T13:03:06.426Z"
+    },
+    {
+      "id": 6,
+      "name": "Test Student",
+      "email": "test_1792417544427@ubt140.kz",
+      "password_hash": "$2a$10$nXQpbYLvNOs1k92efvt7yeP/qwnmrUNM.thzE.ovhyx9whTnpRYuK",
+      "role": "student",
+      "avatar": null,
+      "created_at": "2026-10-19T13:45:44.526Z"
+    }
+  ],
+  "courses": [
+    {
+      "id": 1,
+      "title": "Математикалық сауаттылық — ҰБТ 15/15 балл",
+      "description": "ҰБТ-ның барлық нұсқаларында кездесетін қисындық есептер, сандар заңдылықтары, диаграммалар және уақытты үнемдейтін лайфхактар. 15 сұрақтан 15 балл жинауға толық кепілдік курс.",
+      "thumbnail": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800",
+      "category": "Математикалық сауаттылық",
+      "duration": "35 сағат",
+      "instructor_id": 2,
+      "is_published": 1,
+      "created_at": "2026-10-19T13:03:06.426Z"
+    },
+    {
+      "id": 2,
+      "title": "Қазақстан тарихы — 20/20 баллдық қарқынды курс",
+      "description": "Ежелгі дәуірден қазіргі күнге дейінгі барлық даталар, карталар, тұлғалар және ҰБТ жаңа тест сұрақтарының талдауы. Конспектілер мен хронологиялық кестелер қоса беріледі.",
+      "thumbnail": "https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=800",
+      "category": "Қазақстан тарихы",
+      "duration": "40 сағат",
+      "instructor_id": 3,
+      "is_published": 1,
+      "created_at": "2026-10-19T13:03:06.427Z"
+    },
+    {
+      "id": 3,
+      "title": "Оқу сауаттылығы — Мәтінмен жылдам жұмыс",
+      "description": "Күрделі ғылыми, көркем және публицистикалық мәтіндерді талдау тәсілдері. Жасырын мағына мен логикалық байланыстарды қатесіз анықтау.",
+      "thumbnail": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800",
+      "category": "Оқу сауаттылығы",
+      "duration": "25 сағат",
+      "instructor_id": 3,
+      "is_published": 1,
+      "created_at": "2026-10-19T13:03:06.427Z"
+    },
+    {
+      "id": 4,
+      "title": "Профильді Математика — 50/50 балл",
+      "description": "Функциялар, тригонометрия, туынды, интеграл, планиметрия және стереометрия есептерін 100% дәлдікпен шешу әдістемесі.",
+      "thumbnail": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=800",
+      "category": "Математика",
+      "duration": "60 сағат",
+      "instructor_id": 2,
+      "is_published": 1,
+      "created_at": "2026-10-19T13:03:06.427Z"
+    },
+    {
+      "id": 5,
+      "title": "Физика — Формулалар, заңдар және ҰБТ есептері",
+      "description": "Механика, термодинамика, электродинамика, оптика және атомдық физика. Әр формулаға түсіндірме мен тест есептері.",
+      "thumbnail": "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=800",
+      "category": "Физика",
+      "duration": "50 сағат",
+      "instructor_id": 2,
+      "is_published": 1,
+      "created_at": "2026-10-19T13:03:06.427Z"
+    },
+    {
+      "id": 6,
+      "title": "Ағылшын тілі — Grammar & Vocabulary for ENT",
+      "description": "Сөздік қор, барлық грамматикалық шақтар мен ҰБТ-да жиі кездесетін контекстік сұрақтардың толық жинағы.",
+      "thumbnail": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800",
+      "category": "Ағылшын тілі",
+      "duration": "35 сағат",
+      "instructor_id": 3,
+      "is_published": 1,
+      "created_at": "2026-10-19T13:03:06.427Z"
+    }
+  ],
+  "sections": [
+    {
+      "id": 1,
+      "course_id": 1,
+      "title": "1-бөлім. Сандық заңдылықтар және сандар тізбегі",
+      "description": "Логикалық есептер мен теңдеулер",
+      "order_num": 1
+    },
+    {
+      "id": 2,
+      "course_id": 1,
+      "title": "2-бөлім. Кестелер, диаграммалар және пайыз",
+      "description": "Мәліметтерді талдау",
+      "order_num": 2
+    },
+    {
+      "id": 3,
+      "course_id": 2,
+      "title": "1-тарау. Ежелгі Қазақстан тарихы",
+      "description": "Тас дәуірінен сақ, ғұндарға дейін",
+      "order_num": 1
+    },
+    {
+      "id": 4,
+      "course_id": 2,
+      "title": "2-тарау. Қазақ хандығының құрылуы мен дамуы",
+      "description": "Керей мен Жәнібектен Кенесары ханға дейін",
+      "order_num": 2
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "section_id": 1,
+      "title": "Сандар қатарындағы заңдылықты табу",
+      "description": "Арифметикалық және геометриялық прогрессияға негізделген ҰБТ есептері.",
+      "video_url": "https://www.youtube.com/watch?v=W6NZfCO5SIk",
+      "content": "Бұл сабақта біз сандық тізбектерді шешудің 3 негізгі алгоритмін қарастырамыз. Қосымша бекітілген PDF файлын жүктеп алып, формулаларды жаттап алыңыз.",
+      "duration": "22 мин",
+      "order_num": 1
+    },
+    {
+      "id": 2,
+      "section_id": 1,
+      "title": "Сағат тілдері мен күнтізбеге қатысты логикалық сұрақтар",
+      "description": "Бұрыштарды табу формуласы және күндерді анықтау.",
+      "video_url": "https://www.youtube.com/watch?v=fJEbVCrEMSE",
+      "content": "Сағат тілдері арасындағы бұрышты табу формуласы: |(11*m - 60*h) / 2|. Осы ереже бойынша кез келген есепті 15 секундта шеше аласыз.",
+      "duration": "18 мин",
+      "order_num": 2
+    },
+    {
+      "id": 3,
+      "section_id": 2,
+      "title": "Диаграммалар мен кестелерді қатесіз оқу",
+      "description": "Күрделі сызбалар мен пайыздарды есептеу.",
+      "video_url": "https://www.youtube.com/watch?v=hdI2bqOjy3c",
+      "content": "ҰБТ-да диаграммалар бойынша кемінде 2-3 есеп келеді. Барлық типтік мысалдар мен жиі жіберілетін қателіктер сарапталды.",
+      "duration": "25 мин",
+      "order_num": 1
+    },
+    {
+      "id": 4,
+      "section_id": 3,
+      "title": "Сақтар мен Үйсіндер, Қаңлылар мәдениеті",
+      "description": "Археологиялық ескерткіштер, Алтын адам, қоғамдық құрылыс.",
+      "video_url": "https://www.youtube.com/watch?v=9WIJQDvt4Us",
+      "content": "Бұл тақырыптан ҰБТ-да археологтар (К. Ақышев, Ә. Төлеубаев т.б.) мен табылған жәдігерлер бойынша сұрақтар міндетті түрде болады.",
+      "duration": "30 мин",
+      "order_num": 1
+    }
+  ],
+  "assignments": [
+    {
+      "id": 1,
+      "lesson_id": 1,
+      "title": "Бекіту есебі: Сандар заңдылығы",
+      "description": "Тізбекті жалғастырыңыз: 2, 5, 10, 17, 26, ? (Жауабыңызды және шешу жолын жазыңыз).",
+      "type": "text"
+    },
+    {
+      "id": 2,
+      "lesson_id": 2,
+      "title": "Уақыт бұрышын есептеу",
+      "description": "Сағат 03:20 болғанда сағаттық және минуттық тілдер арасындағы бұрыш қанша градус болады?",
+      "type": "text"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "lesson_id": 1,
+      "title": "Математикалық сауаттылық — Формулалар шпаргалкасы (PDF)",
+      "filename": "math-shortcuts-ent.pdf",
+      "filepath": "",
+      "filetype": "application/pdf"
+    },
+    {
+      "id": 2,
+      "lesson_id": 4,
+      "title": "Қазақстан тарихы — Хронологиялық кесте (PDF)",
+      "filename": "kazakh-history-dates.pdf",
+      "filepath": "",
+      "filetype": "application/pdf"
+    }
+  ],
+  "enrollments": [
+    {
+      "id": 1,
+      "user_id": 4,
+      "course_id": 1,
+      "enrolled_at": "2026-10-19T13:03:06.427Z"
+    },
+    {
+      "id": 2,
+      "user_id": 4,
+      "course_id": 2,
+      "enrolled_at": "2026-10-19T13:03:06.427Z"
+    },
+    {
+      "id": 3,
+      "user_id": 1,
+      "course_id": 2,
+      "enrolled_at": "2026-10-19T13:13:02.228Z"
+    },
+    {
+      "id": 4,
+      "user_id": 5,
+      "course_id": 2,
+      "enrolled_at": "2026-10-19T13:18:22.468Z"
+    },
+    {
+      "id": 5,
+      "user_id": 4,
+      "course_id": 3,
+      "enrolled_at": "2026-10-19T13:18:46.697Z"
+    },
+    {
+      "id": 6,
+      "user_id": 5,
+      "course_id": 3,
+      "enrolled_at": "2026-10-19T13:23:58.948Z"
+    },
+    {
+      "id": 7,
+      "user_id": 5,
+      "course_id": 6,
+      "enrolled_at": "2026-10-19T13:23:58.948Z"
+    },
+    {
+      "id": 8,
+      "user_id": 3,
+      "course_id": 6,
+      "enrolled_at": "2026-10-19T13:24:04.699Z"
+    },
+    {
+      "id": 9,
+      "user_id": 3,
+      "course_id": 5,
+      "enrolled_at": "2026-10-19T13:24:04.699Z"
+    },
+    {
+      "id": 10,
+      "user_id": 2,
+      "course_id": 5,
+      "enrolled_at": "2026-10-19T13:24:09.488Z"
+    },
+    {
+      "id": 11,
+      "user_id": 2,
+      "course_id": 4,
+      "enrolled_at": "2026-10-19T13:24:09.488Z"
+    },
+    {
+      "id": 12,
+      "user_id": 6,
+      "course_id": 1,
+      "enrolled_at": "2026-10-19T13:45:44.540Z"
+    },
+    {
+      "id": 13,
+      "user_id": 6,
+      "course_id": 2,
+      "enrolled_at": "2026-10-19T13:45:44.540Z"
+    }
+  ],
+  "progress": [
+    {
+      "id": 1,
+      "user_id": 4,
+      "lesson_id": 1,
+      "completed": 1,
+      "completed_at": "2026-10-19T13:03:06.427Z"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "lesson_id": 4,
+      "completed": 1,
+      "completed_at": "2026-10-19T13:13:13.492Z"
+    }
+  ],
+  "assignment_submissions": []
+}
