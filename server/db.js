@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 const DB_FILE = path.join(__dirname, '..', 'lms_database.json');
 
@@ -15,7 +16,51 @@ const initialData = {
   assignment_submissions: []
 };
 
-function readDb() {
+// In-memory cache for instantaneous route responses
+let memoryDb = null;
+let pgPool = null;
+
+// Initialize PostgreSQL if DATABASE_URL is provided (Neon / Supabase / Render Postgres)
+const DATABASE_URL = process.env.DATABASE_URL;
+if (DATABASE_URL) {
+  try {
+    pgPool = new Pool({
+      connectionString: DATABASE_URL,
+      ssl: DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
+    });
+
+    pgPool.query(`
+      CREATE TABLE IF NOT EXISTS lms_state (
+        key VARCHAR(50) PRIMARY KEY,
+        data JSONB NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `).then(async () => {
+      console.log('🐘 PostgreSQL успешно подключен к облаку!');
+      const res = await pgPool.query('SELECT data FROM lms_state WHERE key = $1', ['main']);
+      if (res.rows.length > 0 && res.rows[0].data) {
+        console.log('📥 База данных загружена из облачного PostgreSQL');
+        memoryDb = res.rows[0].data;
+        try {
+          fs.writeFileSync(DB_FILE, JSON.stringify(memoryDb, null, 2), 'utf8');
+        } catch {}
+      } else {
+        const currentData = readFromFile();
+        await pgPool.query(
+          'INSERT INTO lms_state (key, data, updated_at) VALUES ($1, $2, NOW()) ON CONFLICT (key) DO UPDATE SET data = $2, updated_at = NOW()',
+          ['main', currentData]
+        );
+        console.log('📤 Начальные данные курсов и пользователей синхронизированы с облаком PostgreSQL');
+      }
+    }).catch(err => {
+      console.error('Ошибка инициализации таблицы в PostgreSQL:', err.message);
+    });
+  } catch (err) {
+    console.error('Ошибка подключения к PostgreSQL:', err.message);
+  }
+}
+
+function readFromFile() {
   if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf8');
     return JSON.parse(JSON.stringify(initialData));
@@ -28,14 +73,38 @@ function readDb() {
   }
 }
 
+function readDb() {
+  if (!memoryDb) {
+    memoryDb = readFromFile();
+  }
+  return memoryDb;
+}
+
 function writeDb(data) {
+  memoryDb = data;
+
+  // 1. Save to local file atomically
   const tempFile = `${DB_FILE}.${Date.now()}.tmp`;
-  fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf8');
   try {
-    fs.renameSync(tempFile, DB_FILE);
-  } catch (e) {
-    fs.copyFileSync(tempFile, DB_FILE);
-    try { fs.unlinkSync(tempFile); } catch {}
+    fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf8');
+    try {
+      fs.renameSync(tempFile, DB_FILE);
+    } catch {
+      fs.copyFileSync(tempFile, DB_FILE);
+      try { fs.unlinkSync(tempFile); } catch {}
+    }
+  } catch (err) {
+    console.error('File write err:', err.message);
+  }
+
+  // 2. Persist to cloud PostgreSQL if connected
+  if (pgPool) {
+    pgPool.query(
+      'INSERT INTO lms_state (key, data, updated_at) VALUES ($1, $2, NOW()) ON CONFLICT (key) DO UPDATE SET data = $2, updated_at = NOW()',
+      ['main', data]
+    ).catch(err => {
+      console.error('PostgreSQL cloud save err:', err.message);
+    });
   }
 }
 
