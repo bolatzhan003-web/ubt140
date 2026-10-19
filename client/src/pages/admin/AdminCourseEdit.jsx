@@ -4,6 +4,7 @@ import { FiSave, FiPlus, FiTrash2, FiArrowLeft, FiUploadCloud, FiFileText, FiDow
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import { SUBJECTS_LIST } from '../../translations';
+import CoverImageUpload from '../../components/CoverImageUpload';
 
 export default function AdminCourseEdit() {
   const { id } = useParams();
@@ -228,25 +229,20 @@ export default function AdminCourseEdit() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Мұқаба суретінің URL</label>
-              <input
-                type="text"
-                value={course.thumbnail || ''}
-                onChange={e => setCourse({ ...course, thumbnail: e.target.value })}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Ұзақтығы</label>
-              <input
-                type="text"
-                value={course.duration || ''}
-                onChange={e => setCourse({ ...course, duration: e.target.value })}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 text-sm"
-              />
-            </div>
+          <CoverImageUpload
+            value={course.thumbnail || ''}
+            onChange={url => setCourse({ ...course, thumbnail: url })}
+          />
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Ұзақтығы</label>
+            <input
+              type="text"
+              value={course.duration || ''}
+              onChange={e => setCourse({ ...course, duration: e.target.value })}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-500 text-sm"
+              placeholder="мысалы: 45 сағат немесе 30 сабақ"
+            />
           </div>
 
           <button

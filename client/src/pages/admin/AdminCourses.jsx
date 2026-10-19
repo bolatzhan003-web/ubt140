@@ -4,6 +4,7 @@ import { FiPlus, FiEdit, FiTrash2, FiEye, FiEyeOff, FiX } from 'react-icons/fi';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import { SUBJECTS_LIST } from '../../translations';
+import CoverImageUpload from '../../components/CoverImageUpload';
 
 export default function AdminCourses() {
   const [courses, setCourses] = useState([]);
@@ -136,16 +137,10 @@ export default function AdminCourses() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Мұқаба суретінің URL (Обложка)</label>
-                <input
-                  type="text"
-                  value={form.thumbnail}
-                  onChange={e => setForm({ ...form, thumbnail: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
-                />
-              </div>
+              <CoverImageUpload
+                value={form.thumbnail}
+                onChange={url => setForm({ ...form, thumbnail: url })}
+              />
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Сағат саны</label>

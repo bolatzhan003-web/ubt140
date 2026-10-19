@@ -7,7 +7,8 @@ import { useLang } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const isKz = lang === 'kz';
   const { user } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);

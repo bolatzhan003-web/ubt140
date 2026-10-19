@@ -1,8 +1,37 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const db = require('../db');
 const { authenticate, optionalAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Multer storage for course cover thumbnails
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '..', '..', 'uploads');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.jpg';
+    const uniqueName = 'cover-' + Date.now() + '-' + Math.round(Math.random() * 1e9) + ext;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Тек сурет файлдары (JPG, PNG, WEBP) қабылданады'));
+    }
+  }
+});
 
 // GET /api/courses - List published courses with filters
 router.get('/', optionalAuth, (req, res) => {
@@ -63,6 +92,20 @@ router.get('/:id', optionalAuth, (req, res) => {
   } catch (err) {
     console.error('Get course error:', err);
     res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// POST /api/courses/upload-thumbnail - Upload course cover image
+router.post('/upload-thumbnail', authenticate, requireRole('admin', 'instructor'), upload.single('thumbnail'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Сурет жүктелмеді' });
+    }
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.json({ url: fileUrl });
+  } catch (err) {
+    console.error('Upload thumbnail error:', err);
+    res.status(500).json({ error: 'Суретті жүктеу қатесі' });
   }
 });
 
