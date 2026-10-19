@@ -1,6 +1,6 @@
 {
   "name": "lms-platform",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "LMS платформа для онлайн курсов",
   "main": "server/index.js",
   "scripts": {
