@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { FiMenu, FiX, FiLogOut, FiBook, FiSettings } from 'react-icons/fi';
+import BrandLogo from './BrandLogo';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -23,15 +24,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <img
-                src="/logo.png"
-                alt="UBT140 Logo"
-                className="h-10 w-10 object-contain transition-transform group-hover:scale-105"
-              />
-              <span className="text-xl font-black tracking-tight text-[#0f2347] group-hover:text-blue-600 transition-colors">
-                UBT140<span className="text-[#f59e0b]">.KZ</span>
-              </span>
+            <Link to="/" className="group">
+              <BrandLogo size="md" />
             </Link>
 
             {/* Navigation links */}

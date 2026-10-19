@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import { FiPhone, FiLock, FiArrowRight } from 'react-icons/fi';
 import { formatKazakhstanPhone } from '../utils/phone';
+import BrandLogo from '../components/BrandLogo';
 import toast from 'react-hot-toast';
 
 export default function Login() {
@@ -49,12 +50,8 @@ export default function Login() {
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 bg-[#f8fafc] animate-fade-in">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <img
-            src="/logo.png"
-            alt="UBT140 Logo"
-            className="w-20 h-20 object-contain mx-auto mb-3 drop-shadow-md"
-          />
+        <div className="text-center mb-8 flex flex-col items-center">
+          <BrandLogo size="lg" className="mb-4" />
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
             {isKz ? 'Платформаға кіру' : 'Вход в аккаунт'}
           </h1>

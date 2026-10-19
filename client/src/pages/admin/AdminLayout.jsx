@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { FiBarChart2, FiBook, FiUsers, FiArrowLeft } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import BrandLogo from '../../components/BrandLogo';
 
 const navItems = [
   { to: '/admin', icon: FiBarChart2, label: 'Дашборд', end: true },
@@ -13,12 +14,11 @@ export default function AdminLayout() {
     <div className="flex min-h-[calc(100vh-64px)]">
       {/* Admin Sidebar */}
       <aside className="w-64 bg-gray-900 text-white flex-shrink-0 hidden md:block">
-        <div className="p-5 flex items-center gap-3 border-b border-gray-800">
-          <img src="/logo.png" alt="UBT140" className="w-9 h-9 object-contain bg-white rounded-xl p-0.5 shadow-sm" />
-          <div>
-            <h2 className="text-sm font-black text-white tracking-tight">UBT140<span className="text-amber-400">.KZ</span></h2>
-            <p className="text-[11px] text-gray-400">Басқару панелі</p>
-          </div>
+        <div className="p-5 border-b border-gray-800">
+          <Link to="/" className="block">
+            <BrandLogo size="md" variant="dark" />
+          </Link>
+          <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Басқару панелі</p>
         </div>
 
         <nav className="px-3 space-y-1">
