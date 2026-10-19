@@ -48,8 +48,8 @@ if (DATABASE_URL) {
       } else {
         const currentData = readFromFile();
         await pgPool.query(
-          'INSERT INTO lms_state (key, data, updated_at) VALUES ($1, $2, NOW()) ON CONFLICT (key) DO UPDATE SET data = $2, updated_at = NOW()',
-          ['main', currentData]
+          'INSERT INTO lms_state (key, data, updated_at) VALUES ($1, $2::jsonb, NOW()) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()',
+          ['main', JSON.stringify(currentData)]
         );
         console.log('📤 Начальные данные курсов и пользователей синхронизированы с облаком PostgreSQL');
       }
@@ -101,8 +101,8 @@ function writeDb(data) {
   // 2. Persist to cloud PostgreSQL if connected
   if (pgPool) {
     pgPool.query(
-      'INSERT INTO lms_state (key, data, updated_at) VALUES ($1, $2, NOW()) ON CONFLICT (key) DO UPDATE SET data = $2, updated_at = NOW()',
-      ['main', data]
+      'INSERT INTO lms_state (key, data, updated_at) VALUES ($1, $2::jsonb, NOW()) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()',
+      ['main', JSON.stringify(data)]
     ).catch(err => {
       console.error('PostgreSQL cloud save err:', err.message);
     });
