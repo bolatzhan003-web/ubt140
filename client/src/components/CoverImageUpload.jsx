@@ -3,7 +3,7 @@ import { FiUploadCloud, FiTrash2, FiLink, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 // Compress image to optimized 16:9 Web JPEG Data URL so it persists permanently in Supabase
-function compressImage(file, maxWidth = 960, maxHeight = 540, quality = 0.82) {
+function compressImage(file, maxWidth = 800, maxHeight = 450, quality = 0.78) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;

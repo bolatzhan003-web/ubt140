@@ -51,7 +51,8 @@ export default function AdminCourseEdit() {
       await api.put(`/courses/${id}`, course);
       toast.success('Курс өзгерістері сақталды!');
     } catch (err) {
-      toast.error('Сақтау қатесі');
+      const msg = err.response?.data?.error || (err.response?.status === 413 ? 'Сурет көлемі тым үлкен' : 'Сақтау қатесі');
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
