@@ -24,11 +24,11 @@ const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 // ===== SECTIONS =====
 router.post('/sections', authenticate, requireRole('admin', 'instructor'), (req, res) => {
   try {
-    const { course_id, title, description, order_num } = req.body;
+    const { course_id, title, description, order_num, is_locked } = req.body;
     if (!course_id || !title) {
       return res.status(400).json({ error: 'course_id и title обязательны' });
     }
-    const section = db.createSection({ course_id, title, description, order_num });
+    const section = db.createSection({ course_id, title, description, order_num, is_locked });
     res.status(201).json({ section });
   } catch (err) {
     console.error('Create section error:', err);
@@ -38,11 +38,12 @@ router.post('/sections', authenticate, requireRole('admin', 'instructor'), (req,
 
 router.put('/sections/:id', authenticate, requireRole('admin', 'instructor'), (req, res) => {
   try {
-    const { title, description, order_num } = req.body;
+    const { title, description, order_num, is_locked } = req.body;
     const section = db.updateSection(req.params.id, {
       ...(title !== undefined ? { title } : {}),
       ...(description !== undefined ? { description } : {}),
-      ...(order_num !== undefined ? { order_num } : {})
+      ...(order_num !== undefined ? { order_num } : {}),
+      ...(is_locked !== undefined ? { is_locked: Boolean(is_locked) } : {})
     });
     res.json({ section });
   } catch (err) {
@@ -87,6 +88,16 @@ router.get('/lessons/:id', authenticate, (req, res) => {
       const isEnrolled = data.course ? db.isEnrolled(req.user.id, data.course.id) : false;
       if (!isEnrolled) {
         return res.status(403).json({ error: 'Вы не записаны на этот курс' });
+      }
+
+      // Check if section is locked for students
+      if (data.section && data.section.is_locked) {
+        return res.status(403).json({
+          error: 'Бұл бөлім әлі жабық (Доступ к этой части курса пока закрыт)',
+          is_locked: true,
+          section_title: data.section.title,
+          course: data.course
+        });
       }
     }
 

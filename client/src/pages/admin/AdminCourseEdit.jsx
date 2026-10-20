@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiSave, FiPlus, FiTrash2, FiArrowLeft, FiUploadCloud, FiFileText, FiDownload } from 'react-icons/fi';
+import { FiSave, FiPlus, FiTrash2, FiArrowLeft, FiUploadCloud, FiFileText, FiDownload, FiLock, FiUnlock } from 'react-icons/fi';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import { SUBJECTS_LIST } from '../../translations';
@@ -15,7 +15,7 @@ export default function AdminCourseEdit() {
   const [saving, setSaving] = useState(false);
 
   // Forms
-  const [sectionForm, setSectionForm] = useState({ title: '', description: '' });
+  const [sectionForm, setSectionForm] = useState({ title: '', description: '', is_locked: false });
   const [showSectionForm, setShowSectionForm] = useState(false);
 
   const [lessonForm, setLessonForm] = useState({ title: '', description: '', video_url: '', content: '', duration: '' });
@@ -88,6 +88,17 @@ export default function AdminCourseEdit() {
       toast.success('Бөлім өшірілді');
       load();
     } catch { toast.error('Қате'); }
+  };
+
+  const toggleSectionLock = async (sectionId, currentLocked) => {
+    try {
+      const newLocked = !currentLocked;
+      await api.put(`/sections/${sectionId}`, { is_locked: newLocked });
+      setSections(prev => prev.map(s => s.id === sectionId ? { ...s, is_locked: newLocked } : s));
+      toast.success(newLocked ? 'Бөлім жабылды (оқушыларға сұр түспен құлыпталды)' : 'Бөлім ашылды (оқушыларға қолжетімді)!');
+    } catch {
+      toast.error('Қате пайда болды');
+    }
   };
 
   // Lessons
@@ -286,6 +297,15 @@ export default function AdminCourseEdit() {
               placeholder="Сипаттамасы (міндетті емес)"
               className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm"
             />
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={sectionForm.is_locked}
+                onChange={e => setSectionForm({ ...sectionForm, is_locked: e.target.checked })}
+                className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500"
+              />
+              <span>🔒 Жабық бөлім етіп қосу (Оқушыларға әзірге сұр түспен құлыптаулы болады)</span>
+            </label>
             <div className="flex gap-2 pt-1">
               <button type="submit" className="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold">Қосу</button>
               <button type="button" onClick={() => setShowSectionForm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Бас тарту</button>
@@ -298,31 +318,71 @@ export default function AdminCourseEdit() {
           {sections.map((section, idx) => (
             <div key={section.id} className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
               {/* Section Header */}
-              <div className="flex items-center justify-between p-4 bg-slate-50 border-b border-slate-200/60">
+              <div className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 border-b ${
+                section.is_locked ? 'bg-slate-100/90 border-slate-300' : 'bg-slate-50 border-slate-200/60'
+              }`}>
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center text-xs font-black">
+                  <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black ${
+                    section.is_locked ? 'bg-slate-300 text-slate-700' : 'bg-sky-100 text-sky-700'
+                  }`}>
                     {idx + 1}
                   </span>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm">{section.title}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className={`font-bold text-sm ${section.is_locked ? 'text-slate-600' : 'text-slate-900'}`}>
+                        {section.title}
+                      </h3>
+                      {section.is_locked ? (
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 border border-slate-300 flex items-center gap-1">
+                          <FiLock size={10} /> Жабық бөлім
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                          <FiUnlock size={10} /> Ашық
+                        </span>
+                      )}
+                    </div>
                     {section.description && <p className="text-xs text-slate-500">{section.description}</p>}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => toggleSectionLock(section.id, section.is_locked)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                      section.is_locked
+                        ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300'
+                        : 'bg-slate-200 hover:bg-slate-300 text-slate-800 border border-slate-300'
+                    }`}
+                    title={section.is_locked ? "Бөлімді оқушыларға ашу" : "Бөлімді оқушыларға жабу"}
+                  >
+                    {section.is_locked ? (
+                      <>
+                        <FiUnlock size={13} className="text-amber-800" />
+                        <span>Бөлімді ашу</span>
+                      </>
+                    ) : (
+                      <>
+                        <FiLock size={13} className="text-slate-700" />
+                        <span>Бөлімді жабу (Сұр)</span>
+                      </>
+                    )}
+                  </button>
+
                   <button
                     onClick={() => {
                       setShowLessonForm(section.id);
                       setLessonForm({ title: '', description: '', video_url: '', content: '', duration: '' });
                     }}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 shadow-sm"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 shadow-sm"
                     title="Сабақ қосу"
                   >
                     <FiPlus size={14} /> Бейнесабақ
                   </button>
                   <button
                     onClick={() => deleteSection(section.id)}
-                    className="p-2 text-rose-400 hover:text-rose-600 rounded-lg hover:bg-rose-50"
+                    className="p-2 text-rose-400 hover:text-rose-600 rounded-xl hover:bg-rose-50"
                     title="Бөлімді өшіру"
                   >
                     <FiTrash2 size={16} />

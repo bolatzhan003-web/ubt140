@@ -13,6 +13,7 @@ export default function LessonPage() {
   const { user } = useAuth();
   const { t } = useLang();
   const [data, setData] = useState(null);
+  const [lockedError, setLockedError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submissionText, setSubmissionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -29,6 +30,7 @@ export default function LessonPage() {
 
   const loadLesson = async () => {
     setLoading(true);
+    setLockedError(null);
     try {
       const res = await api.get(`/lessons/${id}`);
       setData(res.data);
@@ -41,7 +43,11 @@ export default function LessonPage() {
         setProgress(progRes.data.progress);
       }
     } catch (err) {
-      toast.error('Ошибка загрузки урока');
+      if (err.response?.data?.is_locked) {
+        setLockedError(err.response.data);
+      } else {
+        toast.error('Ошибка загрузки урока');
+      }
     } finally {
       setLoading(false);
     }
@@ -140,6 +146,40 @@ export default function LessonPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (lockedError) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 max-w-md w-full text-center shadow-xl animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-4 text-3xl font-black shadow-sm">
+            🔒
+          </div>
+          <h2 className="text-base font-black text-slate-900 mb-2">
+            Бұл бөлім әзірге жабық
+          </h2>
+          <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+            {lockedError.section_title ? `«${lockedError.section_title}» бөліміне` : 'Бұл сабаққа'} оқытушы әлі рұқсат бермеген. Жаңа апта басталғанда сабақ қолжетімді болады.
+          </p>
+          <div className="space-y-2">
+            {lockedError.course?.id && (
+              <Link
+                to={`/course/${lockedError.course.id}`}
+                className="block w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+              >
+                ← Курс бағдарламасына қайту
+              </Link>
+            )}
+            <Link
+              to="/dashboard"
+              className="block w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
+            >
+              Жеке кабинетке өту
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

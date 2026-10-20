@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FiClock, FiBook, FiUsers, FiPlay, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiClock, FiBook, FiUsers, FiPlay, FiChevronDown, FiChevronUp, FiLock } from 'react-icons/fi';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
@@ -55,7 +55,11 @@ export default function CoursePage() {
     );
   };
 
-  const firstLessonId = sections[0]?.lessons?.[0]?.id;
+  const isAdminOrInstructor = user && (user.role === 'admin' || user.role === 'instructor');
+  const availableSection = isAdminOrInstructor 
+    ? sections.find(s => s.lessons?.length > 0)
+    : sections.find(s => !s.is_locked && s.lessons?.length > 0);
+  const firstLessonId = availableSection?.lessons?.[0]?.id || sections[0]?.lessons?.[0]?.id;
 
   if (loading) {
     return (
@@ -157,58 +161,97 @@ export default function CoursePage() {
         </h2>
 
         <div className="space-y-3">
-          {sections.map((section, idx) => (
-            <div key={section.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-              <button
-                onClick={() => toggleSection(section.id)}
-                className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-colors"
+          {sections.map((section, idx) => {
+            const isLocked = Boolean(section.is_locked);
+            const isRestrictedForUser = isLocked && !isAdminOrInstructor;
+
+            return (
+              <div 
+                key={section.id} 
+                className={`rounded-2xl border overflow-hidden shadow-sm transition-all ${
+                  isLocked ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-xs font-bold">
-                    {idx + 1}
-                  </span>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 text-sm">{section.title}</h3>
-                    {section.description && (
-                      <p className="text-xs text-slate-500 mt-0.5">{section.description}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 text-slate-400 text-xs">
-                  <span>{section.lessons?.length || 0} {t.course.lessons}</span>
-                  {expandedSections.includes(section.id) ? <FiChevronUp /> : <FiChevronDown />}
-                </div>
-              </button>
-
-              {expandedSections.includes(section.id) && section.lessons && (
-                <div className="border-t border-slate-100 divide-y divide-slate-100 bg-slate-50/50">
-                  {section.lessons.map(lesson => (
-                    <div key={lesson.id} className="flex items-center justify-between px-6 py-3 pl-14">
-                      <div className="flex items-center gap-2.5">
-                        <FiPlay className="text-blue-600" size={12} />
-                        <span className="text-xs text-slate-700 font-medium">{lesson.title}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        {lesson.duration && (
-                          <span className="text-[11px] text-slate-400">{lesson.duration}</span>
-                        )}
-                        {enrolled && (
-                          <Link
-                            to={`/lesson/${lesson.id}`}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                          >
-                            {t.course.watch} →
-                          </Link>
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className={`w-full flex items-center justify-between p-5 text-left transition-colors ${
+                    isLocked 
+                      ? 'bg-slate-100/90 hover:bg-slate-200/50 border-l-4 border-slate-400' 
+                      : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
+                      isLocked ? 'bg-slate-300 text-slate-700' : 'bg-blue-50 text-blue-600'
+                    }`}>
+                      {isLocked ? <FiLock size={12} /> : idx + 1}
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`font-semibold text-sm ${isLocked ? 'text-slate-600' : 'text-slate-900'}`}>
+                          {section.title}
+                        </h3>
+                        {isLocked && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-600 border border-slate-300 flex items-center gap-1">
+                            <FiLock size={10} /> Жабық бөлім
+                          </span>
                         )}
                       </div>
+                      {section.description && (
+                        <p className="text-xs text-slate-500 mt-0.5">{section.description}</p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                  </div>
+
+                  <div className="flex items-center gap-3 text-slate-400 text-xs">
+                    <span>{section.lessons?.length || 0} {t.course.lessons}</span>
+                    {expandedSections.includes(section.id) ? <FiChevronUp /> : <FiChevronDown />}
+                  </div>
+                </button>
+
+                {expandedSections.includes(section.id) && section.lessons && (
+                  <div className={`border-t border-slate-100 divide-y divide-slate-100 ${
+                    isLocked ? 'bg-slate-100/40' : 'bg-slate-50/50'
+                  }`}>
+                    {section.lessons.map(lesson => (
+                      <div key={lesson.id} className="flex items-center justify-between px-6 py-3 pl-14">
+                        <div className="flex items-center gap-2.5">
+                          {isRestrictedForUser ? (
+                            <FiLock className="text-slate-400" size={12} />
+                          ) : (
+                            <FiPlay className="text-blue-600" size={12} />
+                          )}
+                          <span className={`text-xs font-medium ${isRestrictedForUser ? 'text-slate-400' : 'text-slate-700'}`}>
+                            {lesson.title}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          {lesson.duration && (
+                            <span className="text-[11px] text-slate-400">{lesson.duration}</span>
+                          )}
+                          {isRestrictedForUser ? (
+                            <span className="text-[11px] font-semibold text-slate-400 bg-slate-200/70 border border-slate-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                              <FiLock size={10} /> Әзірге жабық
+                            </span>
+                          ) : (
+                            enrolled && (
+                              <Link
+                                to={`/lesson/${lesson.id}`}
+                                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                              >
+                                {t.course.watch} →
+                              </Link>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

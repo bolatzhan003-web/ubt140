@@ -571,7 +571,7 @@ const db = {
   },
 
   // Sections & Lessons
-  createSection: ({ course_id, title, description, order_num }) => {
+  createSection: ({ course_id, title, description, order_num, is_locked }) => {
     const data = readDb();
     const cid = parseInt(course_id);
     const maxOrder = data.sections.filter(s => s.course_id === cid).reduce((m, s) => Math.max(m, s.order_num || 0), 0);
@@ -580,7 +580,8 @@ const db = {
       course_id: cid,
       title,
       description: description || '',
-      order_num: order_num !== undefined ? order_num : maxOrder + 1
+      order_num: order_num !== undefined ? order_num : maxOrder + 1,
+      is_locked: Boolean(is_locked)
     };
     data.sections.push(section);
     writeDb(data);
@@ -671,6 +672,7 @@ const db = {
 
     return {
       lesson,
+      section: section ? { id: section.id, title: section.title, is_locked: Boolean(section.is_locked) } : null,
       assignments,
       materials,
       progress: prog || null,
